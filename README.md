@@ -1,2 +1,2 @@
-# latin-add-on
-Google Docs Latin Add-On
+# Latin Helper
+Google Docs Latin Helper Add-On

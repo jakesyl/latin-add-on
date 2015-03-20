@@ -1,0 +1,157 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<style>
+.branding-below {
+  bottom: 56px;
+  top: 0;
+}
+
+.branding-text {
+  left: 7px;
+  position: relative;
+  top: 3px;
+}
+
+.col-contain {
+  overflow: hidden;
+}
+
+.col-one {
+  float: left;
+  width: 50%;
+}
+
+.logo {
+  vertical-align: middle;
+}
+
+.radio-spacer {
+  height: 20px;
+}
+
+.width-100 {
+  width: 100%;
+}
+</style>
+
+<div class="sidebar branding-below">
+  <form>
+    <div class="block col-contain">
+    <b>Translate</b><br>Highlight Text and Click Translate
+      <div class="col-one">
+      <br>
+        <b>Selected Text</b>
+        <div>
+          <input type="radio" name="origin" id="radio-origin-en" value="en" checked="checked">
+          <label for="radio-origin-en">English</label>
+        </div>
+        <div>
+          <input type="radio" name="origin" id="radio-origin-la" value="la">
+          <label for="radio-origin-la">Latin</label>
+        </div>
+      </div>
+      <div class="col-one">
+      <br>
+        <b>Translate Into</b>
+        <div>
+        </div>
+        <div>
+          <input type="radio" name="dest" id="radio-dest-en" value="en">
+          <label for="radio-dest-en">English</label>
+        </div>
+        <div>
+          <input type="radio" name="dest" id="radio-dest-la" value="la" checked="checked">
+          <label for="radio-dest-la">Latin</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="block form-group">
+      <label for="translated-text"><b>Translation</b></label>
+      <textarea class="width-100" id="translated-text" rows="6"></textarea>
+    </div>
+
+   <div class="block" id="button-bar">
+      <button class="blue" id="run-translation">Translate</button>
+      <button id="insert-text">Insert</button>
+    </div>
+    
+    <div class="block">
+      <b>Insert Macrons</b><br><br>
+      <button id="capa" onclick="google.script.run.insertcapa()">&#256;</button>
+      <button id="a" onclick="google.script.run.inserta()">&#257;</button><br>
+      <button id="cape" onclick="google.script.run.insertcape()">&#274;</button>
+      <button id="e" onclick="google.script.run.inserte()">&#275;</button><br>
+      <button id="capi" onclick="google.script.run.insertcapi()">&#298;</button>
+      <button id="i" onclick="google.script.run.inserti()">&#299;</button><br>
+      <button id="capo" onclick="google.script.run.insertcapo()">&#332;</button>
+      <button id="o" onclick="google.script.run.inserto()">&#333;</button><br>
+      <button id="capu" onclick="google.script.run.insertcapu()">&#362;</button>
+      <button id="u" onclick="google.script.run.insertu()">&#363;</button>
+    </div>
+  </form>
+</div>
+
+<div class="sidebar bottom">
+  <span class="gray branding-text">Latin Translator by Zach Panzarino</span>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+</script>
+<script>
+  $(function() {
+    $('#run-translation').click(runTranslation);
+    $('#insert-text').click(insertText);
+    google.script.run.withSuccessHandler(loadPreferences)
+        .withFailureHandler(showError).getPreferences();
+  });
+  function loadPreferences(languagePrefs) {
+    $('input:radio[name="origin"]')
+        .filter('[value=' + languagePrefs.originLang + ']')
+        .attr('checked', true);
+    $('input:radio[name="dest"]')
+        .filter('[value=' + languagePrefs.destLang + ']')
+        .attr('checked', true);
+  }
+  function runTranslation() {
+    this.disabled = true;
+    $('#error').remove();
+    var origin = $('input[name=origin]:checked').val();
+    var dest = $('input[name=dest]:checked').val();
+    var savePrefs = $('#save-prefs').is(':checked');
+    google.script.run
+        .withSuccessHandler(
+          function(translatedText, element) {
+            $('#translated-text').val(translatedText);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showError(msg, $('#button-bar'));
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .runTranslation(origin, dest, savePrefs);
+  }
+  function insertText() {
+    this.disabled = true;
+    $('#error').remove();
+    google.script.run
+        .withSuccessHandler(
+          function(returnSuccess, element) {
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showError(msg, $('#button-bar'));
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .insertText($('#translated-text').val());
+  }
+
+  function showError(msg, element) {
+    var div = $('<div id="error" class="error">' + msg + '</div>');
+    $(element).after(div);
+  }
+</script>
